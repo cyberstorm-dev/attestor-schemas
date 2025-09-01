@@ -27,27 +27,7 @@
           SwaggerUIBundle.plugins.DownloadUrl
         ],
         layout: "StandaloneLayout",
-        tryItOutEnabled: true,
-        // Configure servers for OpenAPI 3.0 after loading
-        onComplete: function() {
-          // Add server configurations - OpenAPI 3.0 supports multiple servers natively
-          ui.getSystem().specActions.updateSpec({
-            servers: [
-              {
-                url: 'http://localhost:6001',
-                description: 'Local development server'
-              },
-              {
-                url: 'https://attestor.staging.cyberstorm.dev',
-                description: 'Staging environment'
-              },
-              {
-                url: 'https://attestor.cyberstorm.dev',
-                description: 'Production environment'
-              }
-            ]
-          });
-        }
+        tryItOutEnabled: true
       });
     };
   </script>
