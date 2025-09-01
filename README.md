@@ -203,8 +203,8 @@ The value of the reputation network grows with each participant:
 
 ## License
 
-[Insert License Information]
+MIT
 
 ## Contact
 
-For questions or support, please open an issue on GitHub or contact the maintainers.
+For questions or support, please open an issue on GitHub.
