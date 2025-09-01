@@ -1,0 +1,495 @@
+syntax = "proto3";
+
+package cyberstorm.attestor.v1;
+
+option go_package = "github.com/cyberstorm-dev/attestor-schemas/gen/cyberstorm/attestor/v1";
+
+import "google/api/annotations.proto";
+import "cyberstorm/attestor/v1/messages.proto";
+
+// Generic attestation service - schema-driven EAS operations
+service AttestService {
+  // Create attestation using dynamic schema encoding
+  rpc CreateAttestation(CreateAttestationRequest) returns (CreateAttestationResponse) {
+    option (google.api.http) = {
+      post: "/v1/attest/create"
+      body: "*"
+    };
+  }
+  
+  // Get schema information
+  rpc GetSchemas(GetSchemasRequest) returns (GetSchemasResponse) {
+    option (google.api.http) = {
+      get: "/v1/attest/schemas"
+    };
+  }
+  
+  // Get specific schema definition
+  rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse) {
+    option (google.api.http) = {
+      get: "/v1/attest/schema/{schema_type}"
+    };
+  }
+}
+
+// Server-side signing service for automated operations
+service SignService {
+  // Server signs attestation using validator private key
+  rpc ServerSignAttestation(ServerSignAttestationRequest) returns (ServerSignAttestationResponse) {
+    option (google.api.http) = {
+      post: "/v1/sign/attest"
+      body: "*"
+    };
+  }
+  
+  // Sign a message using server's private key
+  rpc SignMessage(SignMessageRequest) returns (SignMessageResponse) {
+    option (google.api.http) = {
+      post: "/v1/sign/message"
+      body: "*"
+    };
+  }
+  
+  // Verify signatures
+  rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse) {
+    option (google.api.http) = {
+      post: "/v1/sign/verify"
+      body: "*"
+    };
+  }
+  
+  // Generate deterministic webhook secret for repository
+  rpc GenerateWebhookSecret(GenerateWebhookSecretRequest) returns (GenerateWebhookSecretResponse) {
+    option (google.api.http) = {
+      post: "/v1/sign/webhook-secret"
+      body: "*"
+    };
+  }
+  
+  // Validate GitHub webhook signature (gRPC only)
+  rpc ValidateWebhookSignature(ValidateWebhookSignatureRequest) returns (ValidateWebhookSignatureResponse);
+  
+  // Get server's public address
+  rpc GetServerAddress(GetServerAddressRequest) returns (GetServerAddressResponse) {
+    option (google.api.http) = {
+      get: "/v1/sign/address"
+    };
+  }
+}
+
+// Business logic service for contribution workflows
+service ContributionService {
+  // Repository management
+  rpc RegisterRepository(RegisterRepositoryRequest) returns (RegisterRepositoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/repository/register"
+      body: "*"
+    };
+  }
+  rpc GetWebhookSecret(GetWebhookSecretRequest) returns (GetWebhookSecretResponse) {
+    option (google.api.http) = {
+      post: "/v1/repository/webhook-secret"
+      body: "*"
+    };
+  }
+  rpc ListRegisteredRepositories(ListRegisteredRepositoriesRequest) returns (ListRegisteredRepositoriesResponse) {
+    option (google.api.http) = {
+      get: "/v1/repository/list"
+    };
+  }
+  
+  // Identity management  
+  rpc RegisterIdentity(RegisterIdentityRequest) returns (RegisterIdentityResponse) {
+    option (google.api.http) = {
+      post: "/v1/identity/register"
+      body: "*"
+    };
+  }
+  rpc ValidateIdentity(ValidateIdentityRequest) returns (ValidateIdentityResponse) {
+    option (google.api.http) = {
+      post: "/v1/identity/validate"
+      body: "*"
+    };
+  }
+  rpc ListRegisteredIdentities(ListRegisteredIdentitiesRequest) returns (ListRegisteredIdentitiesResponse) {
+    option (google.api.http) = {
+      get: "/v1/identity/list"
+    };
+  }
+  rpc LookupIdentityRegistration(LookupIdentityRegistrationRequest) returns (LookupIdentityRegistrationResponse) {
+    option (google.api.http) = {
+      get: "/v1/identity/lookup/{identifier}"
+    };
+  }
+  
+  // Webhook processing
+  rpc ProcessWebhook(ProcessWebhookRequest) returns (ProcessWebhookResponse) {
+    option (google.api.http) = {
+      post: "/v1/webhook"
+      body: "*"
+    };
+  }
+  
+  // Contribution queries
+  rpc GetContributions(GetContributionsRequest) returns (GetContributionsResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/query"
+      body: "*"
+    };
+  }
+  rpc GetContributionsByIdentity(GetContributionsByIdentityRequest) returns (GetContributionsByIdentityResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/by-identity"
+      body: "*"
+    };
+  }
+  rpc GetContributionsByRepository(GetContributionsByRepositoryRequest) returns (GetContributionsByRepositoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/by-repository"
+      body: "*"
+    };
+  }
+  
+  // Referential lookups
+  rpc GetContributionsByIdentityUid(GetContributionsByIdentityUidRequest) returns (GetContributionsByIdentityUidResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/by-identity-uid/{attestation_uid}"
+    };
+  }
+  rpc GetContributionsByRepositoryUid(GetContributionsByRepositoryUidRequest) returns (GetContributionsByRepositoryUidResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/by-repository-uid/{attestation_uid}"
+    };
+  }
+  rpc GetLinkedIssues(GetLinkedIssuesRequest) returns (GetLinkedIssuesResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/pr/{pr_attestation_uid}/issues"
+    };
+  }
+  rpc GetPullRequestReviews(GetPullRequestReviewsRequest) returns (GetPullRequestReviewsResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/pr/{pr_attestation_uid}/reviews"
+    };
+  }
+  
+  // Repository registration workflow methods (gRPC only)
+  rpc GenerateRepositoryBranchName(GenerateRepositoryBranchNameRequest) returns (GenerateRepositoryBranchNameResponse);
+  rpc ValidateRepositoryBranch(ValidateRepositoryBranchRequest) returns (ValidateRepositoryBranchResponse);
+}
+
+// Attest Service Messages
+message CreateAttestationRequest {
+  string schema_type = 1;                    // e.g., "repository-registration", "identity"
+  map<string, AttestationValue> data = 2;    // Dynamic key-value data matching schema
+  string recipient = 3;                      // Ethereum address (optional, defaults to attester)
+  bool revocable = 4;                        // Whether attestation can be revoked
+  uint64 expiration_time = 5;                // Unix timestamp (0 = no expiration)
+}
+
+message StringArray {
+  repeated string values = 1;
+}
+
+message BytesArray {
+  repeated bytes values = 1;
+}
+
+message AttestationValue {
+  oneof value {
+    string string_value = 1;
+    bytes bytes_value = 2;
+    string address_value = 3;        // Ethereum address as string
+    uint64 uint64_value = 4;
+    bool bool_value = 5;
+    StringArray string_array = 6;
+    BytesArray bytes_array = 7;
+  }
+}
+
+message CreateAttestationResponse {
+  string attestation_uid = 1;       // EAS attestation UID
+  string transaction_hash = 2;      // Blockchain transaction hash
+  string attester = 3;              // Address that created the attestation
+}
+
+message GetSchemasResponse {
+  map<string, SchemaDefinition> schemas = 1;
+  repeated SchemaDeployment deployments = 2;
+}
+
+message SchemaDefinition {
+  string name = 1;
+  string definition = 2;      // EAS schema definition string
+  string description = 3;
+}
+
+message SchemaDeployment {
+  string contract_name = 1;
+  string contract_address = 2;    // Schema UID
+}
+
+message GetSchemaRequest {
+  string schema_type = 1;
+}
+
+message GetSchemaResponse {
+  SchemaDefinition schema = 1;
+  SchemaDeployment deployment = 2;
+}
+
+// Sign Service Messages  
+message ServerSignAttestationRequest {
+  string schema_type = 1;
+  map<string, AttestationValue> data = 2;
+  string recipient = 3;
+  bool revocable = 4;
+  uint64 expiration_time = 5;
+}
+
+message ServerSignAttestationResponse {
+  string attestation_uid = 1;
+  string transaction_hash = 2;
+  string attester = 3;              // Server's address
+}
+
+message SignMessageRequest {
+  string message = 1;               // Message to sign
+}
+
+message SignMessageResponse {
+  string signature = 1;             // Hex-encoded signature
+  string signer_address = 2;        // Server's address
+  string message_hash = 3;          // Hash of the signed message
+}
+
+message VerifySignatureRequest {
+  string message = 1;
+  string signature = 2;             // Hex-encoded signature
+  string expected_signer = 3;       // Expected Ethereum address (optional)
+}
+
+message VerifySignatureResponse {
+  bool valid = 1;
+  string signer_address = 2;        // Recovered address
+  string error = 3;                 // Error message if invalid
+}
+
+message GenerateWebhookSecretRequest {
+  Repository repository = 1;        // Repository (domain + path)
+  bytes registrant_signature = 2;   // Registrant's signature
+}
+
+message GenerateWebhookSecretResponse {
+  string webhook_secret = 1;        // Generated webhook secret
+  Repository repository = 2;        // Repository (domain + path)
+  string validator_address = 3;     // Server's validator address
+}
+
+message ValidateWebhookSignatureRequest {
+  string payload = 1;               // Raw webhook payload
+  string signature = 2;            // GitHub webhook signature (sha256=...)  
+  string webhook_secret = 3;        // Expected webhook secret
+}
+
+message ValidateWebhookSignatureResponse {
+  bool valid = 1;                   // True if signature is valid
+  string error = 2;                 // Error message if invalid
+}
+
+message GetServerAddressResponse {
+  string address = 1;               // Server's Ethereum address
+}
+
+// Contribution Service Messages  
+message RegisterRepositoryResponse {
+  string attestation_uid = 1;       // EAS attestation UID for the registration
+  string webhook_secret = 2;        // Derived webhook secret for GitHub configuration
+}
+
+message WebhookSecretResponse {
+  string webhook_secret = 1;        // Derived webhook secret for this repository
+  bool registered = 2;             // Whether repository is registered
+}
+
+message ListRegisteredRepositoriesResponse {
+  repeated RepositoryRegistration repositories = 1;
+}
+
+message RegisterIdentityResponse {
+  string attestation_uid = 1;
+  string validation_signature = 2;        // Server's validation signature
+  string validator = 3;             // Server's address
+}
+
+message ValidateIdentityRequest {
+  string identifier = 1;
+  string proof_url = 2;
+  string registrant = 3;
+}
+
+message ValidateIdentityResponse {
+  bool valid = 1;
+  string validation_signature = 2;
+  string validator = 3;
+  string error = 4;
+}
+
+message ListRegisteredIdentitiesResponse {
+  repeated Identity identities = 1;
+  uint32 total_count = 2;
+}
+
+message LookupIdentityRequest {
+  string identifier = 1;              // GitHub username
+}
+
+message LookupIdentityResponse {
+  Identity identity = 1;
+  string attestation_uid = 2;
+  bool found = 3;
+}
+
+message ProcessWebhookResponse {
+  bool processed = 1;
+  string attestation_uid = 2;       // EAS attestation UID if created
+  string error = 3;                // Error message if failed
+}
+
+message GetContributionsRequest {
+  Repository repository = 1;
+  Identity identity = 2;
+  uint32 limit = 3;
+  uint32 offset = 4;
+}
+
+message GetContributionsResponse {
+  repeated IssueContribution issues = 1;
+  repeated PullRequestContribution pull_requests = 2;
+  repeated ReviewContribution reviews = 3;
+  uint32 total_count = 4;
+}
+
+// Referential lookup request/response messages
+message GetContributionsByUidRequest {
+  bytes attestation_uid = 1;       // UID of the identity or repository attestation
+  uint32 limit = 2;
+  uint32 offset = 3;
+}
+
+message GetLinkedIssuesRequest {
+  bytes pr_attestation_uid = 1;    // UID of the PR attestation
+}
+
+message GetLinkedIssuesResponse {
+  repeated IssueContribution issues = 1;
+}
+
+message GetPullRequestReviewsRequest {
+  bytes pr_attestation_uid = 1;    // UID of the PR attestation  
+}
+
+message GetPullRequestReviewsResponse {
+  repeated ReviewContribution reviews = 1;
+}
+
+// Repository registration workflow messages
+message GenerateRepositoryBranchNameRequest {
+  string repository_path = 1;      // "owner/repo" format
+  bytes registrant_signature = 2;  // Registrant's signature for deterministic generation
+}
+
+message GenerateRepositoryBranchNameResponse {
+  string branch_name = 1;          // Generated branch name
+  string repository_path = 2;      // Echoed repository path
+  string expected_message = 3;     // Message that should be in branch (e.g., "github.com/owner/repo")
+  uint64 generated_at = 4;         // Unix timestamp when generated
+}
+
+message ValidateRepositoryBranchRequest {
+  string repository_path = 1;      // "owner/repo" format
+  string registrant_address = 2;   // Ethereum address of registrant
+  bytes registrant_signature = 3;  // Registrant's signature
+}
+
+message ValidateRepositoryBranchResponse {
+  bool valid = 1;                  // Whether branch exists and is valid
+  string branch_name = 2;          // Expected branch name
+  string branch_sha = 3;           // Git commit SHA if found
+  uint64 verified_at = 4;          // Unix timestamp when verified
+  string error = 5;                // Error message if validation failed
+}
+
+// Missing request messages for lint compliance
+
+// Empty request messages (previously using google.protobuf.Empty)
+message GetSchemasRequest {}
+message GetServerAddressRequest {}
+message ListRegisteredRepositoriesRequest {}
+message ListRegisteredIdentitiesRequest {}
+
+// Request messages that wrap existing types
+message RegisterRepositoryRequest {
+  RepositoryRegistration registration = 1;
+}
+
+message GetWebhookSecretRequest {
+  Repository repository = 1;
+}
+
+message GetWebhookSecretResponse {
+  WebhookSecretResponse response = 1;
+}
+
+message RegisterIdentityRequest {
+  Identity identity = 1;
+}
+
+message LookupIdentityRegistrationRequest {
+  Domain domain = 1;
+  string identifier = 2;
+}
+
+message ProcessWebhookRequest {
+  WebhookEvent event = 1;
+}
+
+message GetContributionsByIdentityRequest {
+  Identity identity = 1;
+}
+
+message GetContributionsByRepositoryRequest {
+  Repository repository = 1;
+}
+
+message GetContributionsByIdentityUidRequest {
+  bytes attestation_uid = 1;
+  uint32 limit = 2;
+  uint32 offset = 3;
+}
+
+message GetContributionsByRepositoryUidRequest {
+  bytes attestation_uid = 1;
+  uint32 limit = 2;
+  uint32 offset = 3;
+}
+
+// Corresponding response messages
+message LookupIdentityRegistrationResponse {
+  LookupIdentityResponse response = 1;
+}
+
+message GetContributionsByIdentityResponse {
+  GetContributionsResponse response = 1;
+}
+
+message GetContributionsByRepositoryResponse {
+  GetContributionsResponse response = 1;
+}
+
+message GetContributionsByIdentityUidResponse {
+  GetContributionsResponse response = 1;
+}
+
+message GetContributionsByRepositoryUidResponse {
+  GetContributionsResponse response = 1;
+}

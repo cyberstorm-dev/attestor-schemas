@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package cyberstorm.attestor.v1;
+
+option go_package = "github.com/cyberstorm-dev/attestor-schemas/gen/cyberstorm/attestor/v1";
+
+// Domain registry - represents a platform/service
+message Domain {
+  string name = 1;                // "GitHub", "Twitter", etc.
+  string domain = 2;              // "github.com", "twitter.com"
+}
+
+// Repository registry - represents a code repository
+message Repository {
+  Domain domain = 1;              // Points to domain (e.g., GitHub)
+  string path = 2;           // "owner/repo"
+}
+
+// Identity registry - links domain identifier to Ethereum address
+message Identity {
+  Domain domain = 1;              // Points to domain
+  string identifier = 2;          // username on that domain
+  string registrant = 3;          // Ethereum address of the registrant (who signs payload)
+  string proof_url = 4;           // Verification proof URL (e.g., gist URL)
+  string validator = 5;           // Ethereum address of the validator
+  bytes registrant_signature = 6;       // Registrant's signature of the payload
+  bytes validator_signature = 7;        // Validator's cryptographic signature validating the identity
+}
+
+// Issue-related events
+enum IssueEvent {
+  ISSUE_EVENT_UNSPECIFIED = 0;
+  ISSUE_EVENT_OPENED = 1;
+  ISSUE_EVENT_RESOLVED = 2;
+}
+
+// Pull request events
+enum PullRequestEvent {
+  PULL_REQUEST_EVENT_UNSPECIFIED = 0;
+  PULL_REQUEST_EVENT_OPENED = 1;
+  PULL_REQUEST_EVENT_MERGED = 2;
+  PULL_REQUEST_EVENT_CLOSED = 3;
+}
+
+// Review events
+enum ReviewEvent {
+  REVIEW_EVENT_UNSPECIFIED = 0;
+  REVIEW_EVENT_APPROVED = 1;
+  REVIEW_EVENT_CHANGES_REQUESTED = 2;
+}
+
+// GitHub webhook event types
+enum WebhookEventType {
+  WEBHOOK_EVENT_TYPE_UNSPECIFIED = 0;
+  WEBHOOK_EVENT_TYPE_ISSUES = 1;
+  WEBHOOK_EVENT_TYPE_PULL_REQUEST = 2;
+  WEBHOOK_EVENT_TYPE_PULL_REQUEST_REVIEW = 3;
+}
+
+message Contribution {
+  Identity identity = 1;          // Points to identity
+  Repository repository = 2;      // Points to repository
+  string url = 3;                 // Platform-specific URL to the contribution
+  bytes identity_attestation_uid = 4;     // UID of the Identity attestation for composability
+  bytes repository_registration_uid = 5; // UID of the RepositoryRegistration attestation
+}
+
+// Issue contribution - specific to issue lifecycle
+message IssueContribution {
+  Contribution contribution = 1;
+  IssueEvent event_type = 2;      // What happened
+}
+
+// Pull request contribution - specific to PR lifecycle
+message PullRequestContribution {
+  Contribution contribution = 1;
+  PullRequestEvent event_type = 2; // What happened
+  string commit_hash = 3;         // Merge commit or latest commit
+  repeated IssueContribution linked_issues = 4; // Issues this PR addresses
+  repeated bytes linked_issue_uids = 5; // UIDs of linked issue attestations for composability
+}
+
+// Code review contribution - specific to review activity
+message ReviewContribution {
+  Contribution contribution = 1;
+  ReviewEvent event_type = 2;     // Type of review
+  PullRequestContribution reviewed_pr = 3; // The PR being reviewed (full context)
+  bytes reviewed_pr_uid = 4;      // UID of the reviewed PR attestation for composability
+}
+
+// Repository registration for EAS attestation (stored on-chain)
+message RepositoryRegistration {
+  Repository repository = 1;       // The repository to monitor
+  Identity registrant = 2;         // Identity of the registrant (GitHub user -> ETH address)
+  string proof_url = 3;            // GitHub issue URL proving repository ownership
+  string validator = 4;            // Ethereum address of the validator
+  bytes registrant_signature = 5;  // Signature of "owner/repo" by registrant
+  bytes validator_signature = 6;   // Cryptographic signature validating the repository ownership
+  // Note: webhook_secret derived as keccak256(repository.full_name + registrant_signature + validator_private_key)
+}
+
+// Webhook payload wrapper
+message WebhookEvent {
+  Repository repository = 1;       // Repository where event occurred
+  WebhookEventType event_type = 2; // Type of GitHub webhook event
+  string action = 3;              // "opened", "closed", "submitted", etc.
+  string raw_payload = 4;         // Original GitHub JSON payload
+}
+
+ 

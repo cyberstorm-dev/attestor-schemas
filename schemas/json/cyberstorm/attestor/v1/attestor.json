@@ -1,0 +1,26 @@
+{
+  "generated": "2025-09-01T00:00:00.000Z",
+  "note": "Manually extracted from src/main/proto/attestor/v1/attestor.proto",
+  "schemas": {
+    "IdentityRegistration": {
+      "definition": "string Domain,string Identifier,address Registrant,string ProofUrl,address Validator,bytes RegistrantSignature,bytes ValidatorSignature",
+      "description": "Domain identity verification"
+    },
+    "RepositoryRegistration": {
+      "definition": "string Domain,string Path,address Registrant,string ProofUrl,address Validator,bytes RegistrantSignature,bytes ValidatorSignature",
+      "description": "Repository registration for contribution monitoring"
+    },
+    "IssueContribution": {
+      "definition": "string Domain,string Path,address Contributor,bytes32 IdentityAttestationUid,bytes32 RepositoryRegistrationUid,string Url,string EventType",
+      "description": "GitHub issue contribution attestation"
+    },
+    "PullRequestContribution": {
+      "definition": "string Domain,string Path,address Contributor,bytes32 IdentityAttestationUid,bytes32 RepositoryRegistrationUid,string Url,string EventType,string CommitHash",
+      "description": "GitHub pull request contribution attestation"
+    },
+    "ReviewContribution": {
+      "definition": "string Domain,string Path,address Contributor,bytes32 IdentityAttestationUid,bytes32 RepositoryRegistrationUid,string Url,string EventType,bytes32 ReviewedPrUid",
+      "description": "GitHub code review contribution attestation"
+    }
+  }
+}
