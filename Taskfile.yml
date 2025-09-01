@@ -74,6 +74,11 @@ tasks:
     cmds:
       - buf generate --template buf.gen.go.yaml {{.SCHEMAS_DIR}} >logs/buf-go.log 2>&1
       - cp templates/go.mod.template {{.DIST_DIR}}/go/go.mod
+      - |
+        if [ ! -f "go.mod" ]; then
+          go mod init github.com/cyberstorm-dev/attestor-schemas
+          go mod tidy
+        fi
       - echo "Go files generated in {{.DIST_DIR}}/go/"
 
   generate:openapi:
