@@ -155,6 +155,7 @@ tasks:
 
   docs:
     desc: Serve OpenAPI docs with Swagger UI (requires generate:openapi)
+    deps: [generate:openapi]
     cmds:
       - ./scripts/serve-docs.sh
 
