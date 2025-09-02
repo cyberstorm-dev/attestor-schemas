@@ -174,7 +174,7 @@ service ContributionService {
 
 // Attest Service Messages
 message CreateAttestationRequest {
-  string schema_type = 1;                    // e.g., "repository-registration", "identity"
+  string schema_type = 1;                    // e.g., "repository", "identity"
   map<string, AttestationValue> data = 2;    // Dynamic key-value data matching schema
   string recipient = 3;                      // Ethereum address (optional, defaults to attester)
   bool revocable = 4;                        // Whether attestation can be revoked
