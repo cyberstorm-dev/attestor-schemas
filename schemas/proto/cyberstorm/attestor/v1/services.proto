@@ -445,7 +445,7 @@ message RegisterIdentityRequest {
 }
 
 message LookupIdentityRegistrationRequest {
-  Domain domain = 1;
+  string domain = 1;
   string identifier = 2;
 }
 
