@@ -67,16 +67,21 @@ jobs:
         tar -czf ../cyberstorm-attestor-schemas-go-${{ inputs.version }}.tar.gz go/
         tar -czf ../cyberstorm-attestor-schemas-openapi-${{ inputs.version }}.tar.gz openapi/
         
-        # Copy Python distribution files with error checking
-        if [ -f python-dist/*.whl ]; then
-          cp python-dist/*.whl ../cyberstorm-attestor-schemas-python-${{ inputs.version }}.whl
+        # Copy Python distribution files using actual generated names
+        # The build process creates files like: cyberstorm_attestor_schemas-1.0.0-py3-none-any.whl
+        whl_file=$(find python-dist -name "*.whl" -type f | head -1)
+        if [ -n "$whl_file" ]; then
+          cp "$whl_file" ../$(basename "$whl_file")
+          echo "✅ Copied wheel: $(basename "$whl_file")"
         else
           echo "❌ No .whl files found in python-dist/"
           exit 1
         fi
         
-        if [ -f python-dist/*.tar.gz ]; then
-          cp python-dist/*.tar.gz ../cyberstorm-attestor-schemas-python-${{ inputs.version }}-source.tar.gz
+        src_file=$(find python-dist -name "*.tar.gz" -type f | head -1)
+        if [ -n "$src_file" ]; then
+          cp "$src_file" ../$(basename "$src_file")
+          echo "✅ Copied source: $(basename "$src_file")"
         else
           echo "❌ No .tar.gz files found in python-dist/"
           exit 1
@@ -95,8 +100,8 @@ jobs:
           cyberstorm-attestor-schemas-typescript-${{ inputs.version }}.tar.gz
           cyberstorm-attestor-schemas-go-${{ inputs.version }}.tar.gz
           cyberstorm-attestor-schemas-openapi-${{ inputs.version }}.tar.gz
-          cyberstorm-attestor-schemas-python-${{ inputs.version }}.whl
-          cyberstorm-attestor-schemas-python-${{ inputs.version }}-source.tar.gz
+          cyberstorm_attestor_schemas-${{ inputs.version }}-py3-none-any.whl
+          cyberstorm_attestor_schemas-${{ inputs.version }}.tar.gz
         body: |
           ## Release ${{ inputs.version }}
           
@@ -105,7 +110,7 @@ jobs:
           ### 📦 Available Packages
           
           - **TypeScript/JavaScript**: `cyberstorm-attestor-schemas-typescript-${{ inputs.version }}.tar.gz`
-          - **Python**: `cyberstorm-attestor-schemas-python-${{ inputs.version }}.whl` (wheel) and `cyberstorm-attestor-schemas-python-${{ inputs.version }}-source.tar.gz` (source)
+          - **Python**: `cyberstorm_attestor_schemas-${{ inputs.version }}-py3-none-any.whl` (wheel) and `cyberstorm_attestor_schemas-${{ inputs.version }}.tar.gz` (source)
           - **Go**: `cyberstorm-attestor-schemas-go-${{ inputs.version }}.tar.gz`
           - **OpenAPI**: `cyberstorm-attestor-schemas-openapi-${{ inputs.version }}.tar.gz`
           
@@ -118,7 +123,7 @@ jobs:
           
           **Python**:
           ```bash
-          pip install ./cyberstorm-attestor-schemas-python-${{ inputs.version }}.whl
+          pip install ./cyberstorm_attestor_schemas-${{ inputs.version }}-py3-none-any.whl
           ```
           
           **Go**:
