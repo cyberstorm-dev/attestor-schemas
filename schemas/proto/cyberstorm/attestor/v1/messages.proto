@@ -4,27 +4,26 @@ package cyberstorm.attestor.v1;
 
 option go_package = "github.com/cyberstorm-dev/attestor-schemas/gen/cyberstorm/attestor/v1";
 
-// Domain registry - represents a platform/service
-message Domain {
-  string name = 1;                // "GitHub", "Twitter", etc.
-  string domain = 2;              // "github.com", "twitter.com"
-}
-
-// Repository registry - represents a code repository
-message Repository {
-  Domain domain = 1;              // Points to domain (e.g., GitHub)
-  string path = 2;           // "owner/repo"
-}
-
 // Identity registry - links domain identifier to Ethereum address
 message Identity {
-  Domain domain = 1;              // Points to domain
+  string domain = 1;              // Points to domain
   string identifier = 2;          // username on that domain
   string registrant = 3;          // Ethereum address of the registrant (who signs payload)
   string proof_url = 4;           // Verification proof URL (e.g., gist URL)
   string attestor = 5;           // Ethereum address of the attestor
   bytes registrant_signature = 6;       // Registrant's signature of (domain.domain + identifier + registrant)
   bytes attestor_signature = 7;        // Attestor's signature of (domain.domain + identifier + registrant)
+}
+
+// Repository for EAS attestation (stored on-chain)
+message Repository {
+  Repository repository = 1;       // The repository to monitor
+  Identity registrant = 2;         // Identity of the registrant (GitHub user -> ETH address)
+  string proof_url = 3;            // Verification branch name (e.g., "cyberstorm-verification-abcd1234")
+  string attestor = 4;            // Ethereum address of the attestor
+  bytes registrant_signature = 5;  // Signature of (repository.domain.domain + repository.path) by registrant
+  bytes attestor_signature = 6;   // Attestor's signature of (repository.domain.domain + repository.path + registrant)
+  // Note: webhook_secret derived as keccak256(domain + path + registrant_signature + attestor_address)
 }
 
 // Issue-related events
@@ -84,17 +83,6 @@ message ReviewContribution {
   ReviewEvent event_type = 2;     // Type of review
   PullRequestContribution reviewed_pr = 3; // The PR being reviewed (full context)
   bytes reviewed_pr_uid = 4;      // UID of the reviewed PR attestation for composability
-}
-
-// Repository registration for EAS attestation (stored on-chain)
-message RepositoryRegistration {
-  Repository repository = 1;       // The repository to monitor
-  Identity registrant = 2;         // Identity of the registrant (GitHub user -> ETH address)
-  string proof_url = 3;            // Verification branch name (e.g., "cyberstorm-verification-abcd1234")
-  string attestor = 4;            // Ethereum address of the attestor
-  bytes registrant_signature = 5;  // Signature of (repository.domain.domain + repository.path) by registrant
-  bytes attestor_signature = 6;   // Attestor's signature of (repository.domain.domain + repository.path + registrant)
-  // Note: webhook_secret derived as keccak256(domain + path + registrant_signature + attestor_address)
 }
 
 // Webhook payload wrapper

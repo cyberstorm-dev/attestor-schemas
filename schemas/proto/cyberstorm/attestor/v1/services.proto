@@ -16,14 +16,14 @@ service AttestService {
       body: "*"
     };
   }
-  
+
   // Get schema information
   rpc GetSchemas(GetSchemasRequest) returns (GetSchemasResponse) {
     option (google.api.http) = {
       get: "/v1/attest/schemas"
     };
   }
-  
+
   // Get specific schema definition
   rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse) {
     option (google.api.http) = {
@@ -41,7 +41,7 @@ service SignService {
       body: "*"
     };
   }
-  
+
   // Sign a message using server's private key
   rpc SignMessage(SignMessageRequest) returns (SignMessageResponse) {
     option (google.api.http) = {
@@ -49,7 +49,7 @@ service SignService {
       body: "*"
     };
   }
-  
+
   // Verify signatures
   rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse) {
     option (google.api.http) = {
@@ -57,7 +57,7 @@ service SignService {
       body: "*"
     };
   }
-  
+
   // Generate deterministic webhook secret for repository
   rpc GenerateWebhookSecret(GenerateWebhookSecretRequest) returns (GenerateWebhookSecretResponse) {
     option (google.api.http) = {
@@ -65,10 +65,10 @@ service SignService {
       body: "*"
     };
   }
-  
+
   // Verify GitHub webhook signature (gRPC only)
   rpc VerifyWebhookSignature(VerifyWebhookSignatureRequest) returns (VerifyWebhookSignatureResponse);
-  
+
   // Get server's public address
   rpc GetServerAddress(GetServerAddressRequest) returns (GetServerAddressResponse) {
     option (google.api.http) = {
@@ -92,13 +92,13 @@ service ContributionService {
       body: "*"
     };
   }
-  rpc ListRegisteredRepositories(ListRegisteredRepositoriesRequest) returns (ListRegisteredRepositoriesResponse) {
+  rpc ListRepositories(ListRepositoriesRequest) returns (ListRepositoriesResponse) {
     option (google.api.http) = {
       get: "/v1/repository/list"
     };
   }
-  
-  // Identity management  
+
+  // Identity management
   rpc RegisterIdentity(RegisterIdentityRequest) returns (RegisterIdentityResponse) {
     option (google.api.http) = {
       post: "/v1/identity/register"
@@ -111,17 +111,17 @@ service ContributionService {
       body: "*"
     };
   }
-  rpc ListRegisteredIdentities(ListRegisteredIdentitiesRequest) returns (ListRegisteredIdentitiesResponse) {
+  rpc ListIdentities(ListIdentitiesRequest) returns (ListIdentitiesResponse) {
     option (google.api.http) = {
       get: "/v1/identity/list"
     };
   }
-  rpc LookupIdentityRegistration(LookupIdentityRegistrationRequest) returns (LookupIdentityRegistrationResponse) {
+  rpc LookupIdentity(LookupIdentityRequest) returns (LookupIdentityResponse) {
     option (google.api.http) = {
       get: "/v1/identity/lookup/{identifier}"
     };
   }
-  
+
   // Webhook processing
   rpc ProcessWebhook(ProcessWebhookRequest) returns (ProcessWebhookResponse) {
     option (google.api.http) = {
@@ -129,7 +129,7 @@ service ContributionService {
       body: "*"
     };
   }
-  
+
   // Contribution queries
   rpc GetContributions(GetContributionsRequest) returns (GetContributionsResponse) {
     option (google.api.http) = {
@@ -149,7 +149,7 @@ service ContributionService {
       body: "*"
     };
   }
-  
+
   // Referential lookups
   rpc GetContributionsByIdentityUid(GetContributionsByIdentityUidRequest) returns (GetContributionsByIdentityUidResponse) {
     option (google.api.http) = {
@@ -171,7 +171,7 @@ service ContributionService {
       get: "/v1/contributions/pr/{pr_attestation_uid}/reviews"
     };
   }
-  
+
   // Repository registration workflow methods (gRPC only)
   rpc GenerateRepositoryBranchName(GenerateRepositoryBranchNameRequest) returns (GenerateRepositoryBranchNameResponse);
   rpc ValidateRepositoryBranch(ValidateRepositoryBranchRequest) returns (ValidateRepositoryBranchResponse);
@@ -237,7 +237,7 @@ message GetSchemaResponse {
   SchemaDeployment deployment = 2;
 }
 
-// Sign Service Messages  
+// Sign Service Messages
 message ServerSignAttestationRequest {
   string schema_type = 1;
   map<string, AttestationValue> data = 2;
@@ -287,7 +287,7 @@ message GenerateWebhookSecretResponse {
 
 message VerifyWebhookSignatureRequest {
   string payload = 1;               // Raw webhook payload
-  string signature = 2;            // GitHub webhook signature (sha256=...)  
+  string signature = 2;            // GitHub webhook signature (sha256=...)
   string webhook_secret = 3;        // Expected webhook secret
 }
 
@@ -300,7 +300,7 @@ message GetServerAddressResponse {
   string address = 1;               // Server's Ethereum address
 }
 
-// Contribution Service Messages  
+// Contribution Service Messages
 message RegisterRepositoryResponse {
   string attestation_uid = 1;       // EAS attestation UID for the registration
   string webhook_secret = 2;        // Derived webhook secret for GitHub configuration
@@ -311,8 +311,8 @@ message WebhookSecretResponse {
   bool registered = 2;             // Whether repository is registered
 }
 
-message ListRegisteredRepositoriesResponse {
-  repeated RepositoryRegistration repositories = 1;
+message ListRepositoriesResponse {
+  repeated Repository repositories = 1;
 }
 
 message RegisterIdentityResponse {
@@ -334,19 +334,9 @@ message ValidateIdentityResponse {
   string error = 4;
 }
 
-message ListRegisteredIdentitiesResponse {
+message ListIdentitiesResponse {
   repeated Identity identities = 1;
   uint32 total_count = 2;
-}
-
-message LookupIdentityRequest {
-  string identifier = 1;              // GitHub username
-}
-
-message LookupIdentityResponse {
-  Identity identity = 1;
-  string attestation_uid = 2;
-  bool found = 3;
 }
 
 message ProcessWebhookResponse {
@@ -385,7 +375,7 @@ message GetLinkedIssuesResponse {
 }
 
 message GetPullRequestReviewsRequest {
-  bytes pr_attestation_uid = 1;    // UID of the PR attestation  
+  bytes pr_attestation_uid = 1;    // UID of the PR attestation
 }
 
 message GetPullRequestReviewsResponse {
@@ -424,12 +414,12 @@ message ValidateRepositoryBranchResponse {
 // Empty request messages (previously using google.protobuf.Empty)
 message GetSchemasRequest {}
 message GetServerAddressRequest {}
-message ListRegisteredRepositoriesRequest {}
-message ListRegisteredIdentitiesRequest {}
+message ListRepositoriesRequest {}
+message ListIdentitiesRequest {}
 
 // Request messages that wrap existing types
 message RegisterRepositoryRequest {
-  RepositoryRegistration registration = 1;
+  Repository repository = 1;
 }
 
 message GetWebhookSecretRequest {
@@ -444,7 +434,7 @@ message RegisterIdentityRequest {
   Identity identity = 1;
 }
 
-message LookupIdentityRegistrationRequest {
+message LookupIdentityRequest {
   string domain = 1;
   string identifier = 2;
 }
@@ -474,7 +464,7 @@ message GetContributionsByRepositoryUidRequest {
 }
 
 // Corresponding response messages
-message LookupIdentityRegistrationResponse {
+message LookupIdentityResponse {
   LookupIdentityResponse response = 1;
 }
 
