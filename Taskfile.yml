@@ -91,7 +91,7 @@ tasks:
 
   generate:all:
     desc: Generate clients for all languages
-    deps: [lint]
+    deps: [lint, clean]
     cmds:
       - task: generate:typescript
       - task: generate:python  
