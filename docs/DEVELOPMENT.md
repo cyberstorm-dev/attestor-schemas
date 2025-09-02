@@ -115,128 +115,122 @@ Create `.vscode/settings.json`:
 
 ## Task Dependency Graph
 
-The build system is organized around a dependency graph that ensures proper ordering of operations:
+The build system uses a clean, parallel task structure that eliminates race conditions and provides consistent behavior across all languages. 
+
+### High-Level Task Flow
 
 ```mermaid
 graph TD
-    %% Core Infrastructure
-    install[install - Install buf CLI]
-    deps[deps - Update dependencies]
-    clean[clean - Clean generated files]
-    
-    %% Development Tasks
-    format[format - Format proto files]
-    lint[lint - Lint proto files]
-    breaking[breaking - Check for breaking changes]
-    
-    %% Language-specific Installation
-    install_ts[install:typescript - Install JS deps]
-    install_py[install:python - Install Python deps]
-    
-    %% Generation Tasks
-    gen_ts[generate:typescript - Generate JS clients]
-    gen_py[generate:python - Generate Python clients]
-    gen_go[generate:go - Generate Go clients]
-    gen_openapi[generate:openapi - Generate OpenAPI specs]
-    gen_all[generate:all - Generate all clients]
-    
-    %% Packaging Tasks
-    pkg_ts[package:typescript - Package for npm]
-    pkg_py[package:python - Package for PyPI]
-    pkg_go[package:go - Package Go module]
-    pkg_all[package:all - Package all]
-    
-    %% Validation Tasks
-    check_ts[check:typescript - Validate JS package]
-    check_py[check:python - Validate Python package]
-    check_go[check:go - Validate Go package]
-    check_openapi[check:openapi - Validate OpenAPI specs]
-    check_all[check:all - Run all checks]
-    
-    %% Publishing Tasks
-    pub_ts[publish:typescript - Publish to npm]
-    pub_py[publish:python - Publish to PyPI]
-    pub_go[publish:go - Tag Go release]
-    
-    %% High-level Tasks
-    build[build - Full build pipeline]
+    %% High-level orchestration
     validate[validate - Full validation pipeline]
-    docs[docs - Serve API docs]
+    check_all[check:all - Direct testing pipeline]
     
-    %% Dependencies
-    install --> deps
-    install --> format
-    install --> breaking
-    install --> gen_py
-    install --> gen_go
-    install --> gen_openapi
+    %% Core setup tasks
+    deps[deps - Update proto dependencies]
+    lint[lint - Lint proto files]
+    clean[clean - Clean generated files]
+    install[install - Install buf CLI]
     
-    deps --> lint
-    deps --> validate
+    %% Validation flow
+    validate --> deps
+    validate --> lint  
+    validate --> check_all
     
-    clean --> gen_ts
-    clean --> gen_py
-    clean --> gen_go
-    clean --> gen_openapi
+    deps --> install
+    lint --> deps
     
-    install_ts --> gen_ts
+    %% Direct testing flow
+    check_all --> clean
+    check_all --> install
     
-    lint --> gen_all
-    lint --> validate
+    classDef highLevel fill:#ffebee
+    classDef coreTask fill:#e1f5fe
     
-    gen_ts --> pkg_ts
-    gen_py --> pkg_py
-    gen_go --> pkg_go
-    gen_openapi --> check_openapi
+    class validate,check_all highLevel
+    class deps,lint,clean,install coreTask
+```
+
+### Parallel Language Structure
+
+All languages follow identical, clean dependency patterns:
+
+```mermaid
+graph TD
+    %% Language-specific flows
+    check_ts[check:typescript]
+    check_py[check:python]
+    check_go[check:go]
+    check_openapi[check:openapi]
     
-    install_py --> pkg_py
-    install_py --> check_py
+    pkg_ts[package:typescript]
+    pkg_py[package:python]
+    pkg_go[package:go]
     
-    pkg_ts --> check_ts
-    pkg_py --> check_py
-    pkg_go --> check_go
+    gen_ts[generate:typescript]
+    gen_py[generate:python]
+    gen_go[generate:go]
+    gen_openapi[generate:openapi]
     
-    gen_ts --> gen_all
-    gen_py --> gen_all
-    gen_go --> gen_all
-    gen_openapi --> gen_all
+    install_ts[install:typescript]
+    install_py[install:python]
+    install_buf[install - buf CLI]
     
-    pkg_ts --> pkg_all
-    pkg_py --> pkg_all
-    pkg_go --> pkg_all
+    %% TypeScript flow
+    check_ts --> pkg_ts --> gen_ts
+    gen_ts --> install_buf
+    gen_ts --> install_ts
     
-    check_ts --> check_all
-    check_py --> check_all
-    check_go --> check_all
-    check_openapi --> check_all
+    %% Python flow  
+    check_py --> pkg_py --> gen_py
+    pkg_py --> install_py
+    gen_py --> install_buf
     
-    pkg_ts --> pub_ts
-    pkg_py --> pub_py
-    pkg_go --> pub_go
+    %% Go flow
+    check_go --> pkg_go --> gen_go --> install_buf
     
-    format --> build
-    lint --> build
-    gen_all --> build
-    
-    deps --> validate
-    lint --> validate
-    check_all --> validate
-    
-    gen_openapi --> docs
+    %% OpenAPI flow (no packaging needed)
+    check_openapi --> gen_openapi --> install_buf
     
     %% Styling
-    classDef coreTask fill:#e1f5fe
-    classDef genTask fill:#f3e5f5
     classDef checkTask fill:#e8f5e8
-    classDef pubTask fill:#fff3e0
-    classDef highLevel fill:#ffebee
+    classDef pkgTask fill:#f3e5f5
+    classDef genTask fill:#e1f5fe
+    classDef installTask fill:#fff3e0
     
-    class install,deps,clean,format,lint,breaking coreTask
-    class gen_ts,gen_py,gen_go,gen_openapi,gen_all genTask
-    class check_ts,check_py,check_go,check_openapi,check_all checkTask
-    class pub_ts,pub_py,pub_go pubTask
-    class build,validate,docs highLevel
+    class check_ts,check_py,check_go,check_openapi checkTask
+    class pkg_ts,pkg_py,pkg_go pkgTask  
+    class gen_ts,gen_py,gen_go,gen_openapi genTask
+    class install_ts,install_py,install_buf installTask
 ```
+
+### Task Structure Principles
+
+**Race Condition Elimination**:
+- `clean` runs once at `check:all` level, not per-task
+- Each `generate:*` task creates its own directories with `mkdir -p`
+- No conflicting concurrent access to shared resources
+
+**Conditional Dependencies**:
+- `install:python` handles both pre-generation (validate) and post-generation (check:all) scenarios
+- Build scripts create isolated environments when needed
+
+**Parallel Execution**:
+- All language checks run independently within `check:all`
+- No cross-language dependencies or shared state
+- Identical dependency patterns across languages
+
+### Individual Language Patterns
+
+```
+TypeScript: check:typescript → package:typescript → generate:typescript → [install, install:typescript]
+Python:     check:python    → package:python    → generate:python    → [install] + install:python  
+Go:         check:go        → package:go        → generate:go        → [install]
+OpenAPI:    check:openapi   → generate:openapi  → [install]
+```
+
+This structure ensures that:
+- **validate**: Runs comprehensive pipeline with deps/lint → check:all
+- **check:all**: Runs direct testing with clean setup → all language checks in parallel
 
 ## Available Tasks
 
