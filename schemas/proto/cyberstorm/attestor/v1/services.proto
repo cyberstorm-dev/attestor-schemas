@@ -150,15 +150,10 @@ service ContributionService {
     };
   }
 
-  // Referential lookups
-  rpc GetContributionsByIdentityUid(GetContributionsByIdentityUidRequest) returns (GetContributionsByIdentityUidResponse) {
+  // Referential lookups by UID
+  rpc GetContributionsByUid(GetContributionsByUidRequest) returns (GetContributionsByUidResponse) {
     option (google.api.http) = {
-      get: "/v1/contributions/by-identity-uid/{attestation_uid}"
-    };
-  }
-  rpc GetContributionsByRepositoryUid(GetContributionsByRepositoryUidRequest) returns (GetContributionsByRepositoryUidResponse) {
-    option (google.api.http) = {
-      get: "/v1/contributions/by-repository-uid/{attestation_uid}"
+      get: "/v1/contributions/by-uid/{attestation_uid}"
     };
   }
   rpc GetLinkedIssues(GetLinkedIssuesRequest) returns (GetLinkedIssuesResponse) {
@@ -346,20 +341,19 @@ message ProcessWebhookResponse {
 }
 
 message GetContributionsRequest {
-  Repository repository = 1;
-  Identity identity = 2;
-  uint32 limit = 3;
-  uint32 offset = 4;
+  Repository repository = 1;                    // Filter by repository (optional)
+  Identity identity = 2;                        // Filter by identity (optional)
+  repeated ContributionEventType event_types = 3; // Filter by event types (optional)
+  uint32 limit = 4;
+  uint32 offset = 5;
 }
 
 message GetContributionsResponse {
-  repeated IssueContribution issues = 1;
-  repeated PullRequestContribution pull_requests = 2;
-  repeated ReviewContribution reviews = 3;
-  uint32 total_count = 4;
+  repeated Contribution contributions = 1;
+  uint32 total_count = 2;
 }
 
-// Referential lookup request/response messages
+// Referential lookup request message
 message GetContributionsByUidRequest {
   bytes attestation_uid = 1;       // UID of the identity or repository attestation
   uint32 limit = 2;
@@ -371,7 +365,7 @@ message GetLinkedIssuesRequest {
 }
 
 message GetLinkedIssuesResponse {
-  repeated IssueContribution issues = 1;
+  repeated Contribution issues = 1;
 }
 
 message GetPullRequestReviewsRequest {
@@ -379,7 +373,7 @@ message GetPullRequestReviewsRequest {
 }
 
 message GetPullRequestReviewsResponse {
-  repeated ReviewContribution reviews = 1;
+  repeated Contribution reviews = 1;
 }
 
 // Repository registration workflow messages
@@ -443,43 +437,39 @@ message ProcessWebhookRequest {
   WebhookEvent event = 1;
 }
 
+// Specific query request messages
 message GetContributionsByIdentityRequest {
   Identity identity = 1;
+  repeated ContributionEventType event_types = 2; // Filter by event types (optional)
+  uint32 limit = 3;
+  uint32 offset = 4;
 }
 
 message GetContributionsByRepositoryRequest {
   Repository repository = 1;
+  repeated ContributionEventType event_types = 2; // Filter by event types (optional)
+  uint32 limit = 3;
+  uint32 offset = 4;
 }
 
-message GetContributionsByIdentityUidRequest {
-  bytes attestation_uid = 1;
-  uint32 limit = 2;
-  uint32 offset = 3;
-}
-
-message GetContributionsByRepositoryUidRequest {
-  bytes attestation_uid = 1;
-  uint32 limit = 2;
-  uint32 offset = 3;
-}
-
-// Corresponding response messages
-message LookupIdentityResponse {
-  LookupIdentityResponse response = 1;
-}
-
+// Response messages
 message GetContributionsByIdentityResponse {
-  GetContributionsResponse response = 1;
+  repeated Contribution contributions = 1;
+  uint32 total_count = 2;
 }
 
 message GetContributionsByRepositoryResponse {
-  GetContributionsResponse response = 1;
+  repeated Contribution contributions = 1;
+  uint32 total_count = 2;
 }
 
-message GetContributionsByIdentityUidResponse {
-  GetContributionsResponse response = 1;
+message GetContributionsByUidResponse {
+  repeated Contribution contributions = 1;
+  uint32 total_count = 2;
 }
 
-message GetContributionsByRepositoryUidResponse {
-  GetContributionsResponse response = 1;
+// Lookup response message
+message LookupIdentityResponse {
+  Identity identity = 1;
+  bool found = 2;
 }
