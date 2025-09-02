@@ -17,6 +17,8 @@ jobs:
   build-and-release:
     name: Build and Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for creating releases and uploading assets
     
     steps:
     - name: Checkout code
@@ -89,6 +91,15 @@ jobs:
         
         echo "✅ All archives created successfully"
         
+    - name: Extract clean version (without v prefix)
+      id: version
+      run: |
+        # Extract version without 'v' prefix for Python file naming
+        CLEAN_VERSION="${{ inputs.version }}"
+        CLEAN_VERSION=${CLEAN_VERSION#v}
+        echo "clean=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+        echo "Clean version: $CLEAN_VERSION"
+        
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
@@ -100,8 +111,8 @@ jobs:
           cyberstorm-attestor-schemas-typescript-${{ inputs.version }}.tar.gz
           cyberstorm-attestor-schemas-go-${{ inputs.version }}.tar.gz
           cyberstorm-attestor-schemas-openapi-${{ inputs.version }}.tar.gz
-          cyberstorm_attestor_schemas-${{ inputs.version }}-py3-none-any.whl
-          cyberstorm_attestor_schemas-${{ inputs.version }}.tar.gz
+          cyberstorm_attestor_schemas-${{ steps.version.outputs.clean }}-py3-none-any.whl
+          cyberstorm_attestor_schemas-${{ steps.version.outputs.clean }}.tar.gz
         body: |
           ## Release ${{ inputs.version }}
           
@@ -110,7 +121,7 @@ jobs:
           ### 📦 Available Packages
           
           - **TypeScript/JavaScript**: `cyberstorm-attestor-schemas-typescript-${{ inputs.version }}.tar.gz`
-          - **Python**: `cyberstorm_attestor_schemas-${{ inputs.version }}-py3-none-any.whl` (wheel) and `cyberstorm_attestor_schemas-${{ inputs.version }}.tar.gz` (source)
+          - **Python**: `cyberstorm_attestor_schemas-${{ steps.version.outputs.clean }}-py3-none-any.whl` (wheel) and `cyberstorm_attestor_schemas-${{ steps.version.outputs.clean }}.tar.gz` (source)
           - **Go**: `cyberstorm-attestor-schemas-go-${{ inputs.version }}.tar.gz`
           - **OpenAPI**: `cyberstorm-attestor-schemas-openapi-${{ inputs.version }}.tar.gz`
           
@@ -123,7 +134,7 @@ jobs:
           
           **Python**:
           ```bash
-          pip install ./cyberstorm_attestor_schemas-${{ inputs.version }}-py3-none-any.whl
+          pip install ./cyberstorm_attestor_schemas-${{ steps.version.outputs.clean }}-py3-none-any.whl
           ```
           
           **Go**:
