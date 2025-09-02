@@ -124,7 +124,6 @@ tasks:
 
   install:python:
     desc: Install Python package in development mode
-    deps: [generate:python]
     cmds:
       - ./scripts/install-python.sh
 
@@ -174,7 +173,7 @@ tasks:
 
   package:python:
     desc: Package Python for PyPI distribution
-    deps: [generate:python]
+    deps: [generate:python, install:python]
     cmds:
       - ./scripts/build-python.sh
 

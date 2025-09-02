@@ -33,15 +33,21 @@ fi
 
 exec 201>&-  # Close the file descriptor
 
-echo "Installing Python package dependencies..."
-# Use cross-platform pip detection
-if [ -f "./venv/bin/pip" ]; then
-    ./venv/bin/pip install -e ".[dev]" --quiet >logs/python-install.log 2>&1
-elif [ -f "./venv/Scripts/pip" ]; then
-    ./venv/Scripts/pip install -e ".[dev]" --quiet >logs/python-install.log 2>&1
+# Only install package if Python source files exist
+if [ -d "dist/python/cyberstorm" ]; then
+    echo "Installing Python package dependencies..."
+    # Use cross-platform pip detection
+    if [ -f "./venv/bin/pip" ]; then
+        ./venv/bin/pip install -e ".[dev]" --quiet >logs/python-install.log 2>&1
+    elif [ -f "./venv/Scripts/pip" ]; then
+        ./venv/Scripts/pip install -e ".[dev]" --quiet >logs/python-install.log 2>&1
+    else
+        echo "Error: Could not find pip in virtual environment"
+        ls -la ./venv/ >>logs/python-install.log 2>&1
+        exit 1
+    fi
+    echo "Python package installed in development mode"
 else
-    echo "Error: Could not find pip in virtual environment"
-    ls -la ./venv/ >>logs/python-install.log 2>&1
-    exit 1
+    echo "Python source files not generated yet - skipping package installation"
+    echo "Virtual environment created and ready for package generation"
 fi
-echo "Python package installed in development mode"
