@@ -49,8 +49,8 @@ message Contribution {
   ContributionEventType event_type = 3;
   repeated Contribution linked_contributions = 4;
   string url = 5;                 // Platform-specific URL to the contribution
-  bytes identity_attestation_uid = 6;     // UID of the Identity attestation for composability
-  bytes repository_registration_uid = 7; // UID of the RepositoryRegistration attestation
+  bytes identity_uid = 6;     // UID of the Identity attestation for composability
+  bytes repository_uid = 7; // UID of the RepositoryRegistration attestation
   repeated bytes linked_contribution_uids = 8;
 }
 
