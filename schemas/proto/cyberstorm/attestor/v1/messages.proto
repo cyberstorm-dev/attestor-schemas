@@ -76,8 +76,6 @@ message PullRequestContribution {
   Contribution contribution = 1;
   PullRequestEvent event_type = 2; // What happened
   string commit_hash = 3;         // Merge commit or latest commit
-  repeated IssueContribution linked_issues = 4; // Issues this PR addresses
-  repeated bytes linked_issue_uids = 5; // UIDs of linked issue attestations for composability
 }
 
 // Code review contribution - specific to review activity
@@ -106,5 +104,3 @@ message WebhookEvent {
   string action = 3;              // "opened", "closed", "submitted", etc.
   string raw_payload = 4;         // Original GitHub JSON payload
 }
-
- 
