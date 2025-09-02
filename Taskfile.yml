@@ -56,7 +56,7 @@ tasks:
 
   generate:typescript:
     desc: Generate JavaScript clients using buf
-    deps: [clean, install:typescript]
+    deps: [clean, install, install:typescript]
     cmds:
       - buf generate --template buf.gen.typescript.yaml {{.SCHEMAS_DIR}} >logs/buf-typescript.log 2>&1
       - echo "JavaScript files generated in {{.DIST_DIR}}/typescript/"
