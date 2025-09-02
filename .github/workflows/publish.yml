@@ -123,6 +123,14 @@ jobs:
         name: dist-packages
         path: dist/python-dist/
 
+    - name: Install build dependencies (for twine)
+      run: |
+        if [ -f "./venv/bin/pip" ]; then
+          ./venv/bin/pip install -e ".[build]" --quiet
+        else
+          python -m pip install -e ".[build]" --quiet
+        fi
+
     - name: Check package before upload
       run: |
         if [ -f "./venv/bin/twine" ]; then
@@ -220,6 +228,14 @@ jobs:
       with:
         name: dist-packages
         path: dist/python-dist/
+
+    - name: Install build dependencies (for twine)
+      run: |
+        if [ -f "./venv/bin/pip" ]; then
+          ./venv/bin/pip install -e ".[build]" --quiet
+        else
+          python -m pip install -e ".[build]" --quiet
+        fi
 
     - name: Publish to PyPI
       env:
