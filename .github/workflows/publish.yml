@@ -123,11 +123,29 @@ jobs:
         name: dist-packages
         path: dist/python-dist/
 
+    - name: Check package before upload
+      run: |
+        if [ -f "./venv/bin/twine" ]; then
+          ./venv/bin/twine check dist/python-dist/*
+        else
+          python -m twine check dist/python-dist/*
+        fi
+
+    - name: List package files
+      run: |
+        echo "Package files to upload:"
+        ls -la dist/python-dist/
+
     - name: Publish to TestPyPI
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
-      run: task publish:python:test
+      run: |
+        if [ -f "./venv/bin/twine" ]; then
+          ./venv/bin/twine upload --repository testpypi --verbose --skip-existing dist/python-dist/*
+        else
+          python -m twine upload --repository testpypi --verbose --skip-existing dist/python-dist/*
+        fi
 
   create-release:
     runs-on: ubuntu-latest
