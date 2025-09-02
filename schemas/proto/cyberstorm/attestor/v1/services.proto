@@ -176,7 +176,7 @@ service ContributionService {
 message CreateAttestationRequest {
   string schema_type = 1;                    // e.g., "repository-registration", "identity"
   map<string, AttestationValue> data = 2;    // Dynamic key-value data matching schema
-  string recipient = 3;                      // Ethereum address (optional, defaults to attester)
+  string recipient = 3;                      // Ethereum address (optional, defaults to attestor)
   bool revocable = 4;                        // Whether attestation can be revoked
   uint64 expiration_time = 5;                // Unix timestamp (0 = no expiration)
 }
@@ -204,7 +204,7 @@ message AttestationValue {
 message CreateAttestationResponse {
   string attestation_uid = 1;       // EAS attestation UID
   string transaction_hash = 2;      // Blockchain transaction hash
-  string attester = 3;              // Address that created the attestation
+  string attestor = 3;              // Address that created the attestation
 }
 
 message GetSchemasResponse {
@@ -244,7 +244,7 @@ message ServerSignAttestationRequest {
 message ServerSignAttestationResponse {
   string attestation_uid = 1;
   string transaction_hash = 2;
-  string attester = 3;              // Server's address
+  string attestor = 3;              // Server's address
 }
 
 message SignMessageRequest {
