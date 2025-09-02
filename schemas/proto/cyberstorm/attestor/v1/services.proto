@@ -66,8 +66,8 @@ service SignService {
     };
   }
   
-  // Validate GitHub webhook signature (gRPC only)
-  rpc ValidateWebhookSignature(ValidateWebhookSignatureRequest) returns (ValidateWebhookSignatureResponse);
+  // Verify GitHub webhook signature (gRPC only)
+  rpc VerifyWebhookSignature(VerifyWebhookSignatureRequest) returns (VerifyWebhookSignatureResponse);
   
   // Get server's public address
   rpc GetServerAddress(GetServerAddressRequest) returns (GetServerAddressResponse) {
@@ -282,16 +282,16 @@ message GenerateWebhookSecretRequest {
 message GenerateWebhookSecretResponse {
   string webhook_secret = 1;        // Generated webhook secret
   Repository repository = 2;        // Repository (domain + path)
-  string validator_address = 3;     // Server's validator address
+  string attestor_address = 3;     // Server's attestor address
 }
 
-message ValidateWebhookSignatureRequest {
+message VerifyWebhookSignatureRequest {
   string payload = 1;               // Raw webhook payload
   string signature = 2;            // GitHub webhook signature (sha256=...)  
   string webhook_secret = 3;        // Expected webhook secret
 }
 
-message ValidateWebhookSignatureResponse {
+message VerifyWebhookSignatureResponse {
   bool valid = 1;                   // True if signature is valid
   string error = 2;                 // Error message if invalid
 }
@@ -317,8 +317,8 @@ message ListRegisteredRepositoriesResponse {
 
 message RegisterIdentityResponse {
   string attestation_uid = 1;
-  string validation_signature = 2;        // Server's validation signature
-  string validator = 3;             // Server's address
+  string attestation_signature = 2;        // Server's attestation signature
+  string attestor = 3;             // Server's address
 }
 
 message ValidateIdentityRequest {
@@ -329,8 +329,8 @@ message ValidateIdentityRequest {
 
 message ValidateIdentityResponse {
   bool valid = 1;
-  string validation_signature = 2;
-  string validator = 3;
+  string attestation_signature = 2;
+  string attestor = 3;
   string error = 4;
 }
 
