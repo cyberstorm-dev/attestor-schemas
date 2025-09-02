@@ -47,7 +47,7 @@ Repository = "https://github.com/cyberstorm-dev/attestor-schemas.git"
 Issues = "https://github.com/cyberstorm-dev/attestor-schemas/issues"
 
 [tool.setuptools]
-packages = ["cyberstorm"]
+packages = ["cyberstorm", "cyberstorm.attestor", "cyberstorm.attestor.v1"]
 
 [tool.setuptools.package-dir]
 "" = "dist/python"

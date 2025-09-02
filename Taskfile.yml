@@ -56,26 +56,30 @@ tasks:
 
   generate:typescript:
     desc: Generate JavaScript clients using buf
-    deps: [clean, install, install:typescript]
+    deps: [install, install:typescript]
     cmds:
+      - mkdir -p {{.DIST_DIR}}/typescript logs
       - buf generate --template buf.gen.typescript.yaml {{.SCHEMAS_DIR}} >logs/buf-typescript.log 2>&1
       - echo "JavaScript files generated in {{.DIST_DIR}}/typescript/"
 
   generate:python:
     desc: Generate Python clients  
-    deps: [clean, install]
+    deps: [install]
     cmds:
+      - mkdir -p {{.DIST_DIR}}/python logs
       - buf generate --template buf.gen.python.yaml {{.SCHEMAS_DIR}} >logs/buf-python.log 2>&1
       - echo "Python files generated in {{.DIST_DIR}}/python/"
 
   generate:go:
     desc: Generate Go clients
-    deps: [clean, install]  
+    deps: [install]  
     cmds:
+      - mkdir -p {{.DIST_DIR}}/go logs
       - buf generate --template buf.gen.go.yaml {{.SCHEMAS_DIR}} >logs/buf-go.log 2>&1
       - cp templates/go.mod.template {{.DIST_DIR}}/go/go.mod
       - |
-        if [ ! -f "go.mod" ]; then
+        if [ ! -f "{{.DIST_DIR}}/go/go.mod" ]; then
+          cd {{.DIST_DIR}}/go
           go mod init github.com/cyberstorm-dev/attestor-schemas
           go mod tidy
         fi
@@ -83,8 +87,9 @@ tasks:
 
   generate:openapi:
     desc: Generate OpenAPI/Swagger specs
-    deps: [clean, install]
+    deps: [install]
     cmds:
+      - mkdir -p {{.DIST_DIR}}/openapi {{.DIST_DIR}}/docs logs
       - buf generate --template buf.gen.openapi.yaml {{.SCHEMAS_DIR}} >logs/buf-openapi.log 2>&1
       - ./scripts/convert-swagger-to-openapi.sh
       - echo "Swagger 2.0 and OpenAPI 3.0 files generated in {{.DIST_DIR}}/openapi/"
@@ -124,7 +129,7 @@ tasks:
 
   check:python:
     desc: Validate packaged Python package works
-    deps: [package:python, install:python]
+    deps: [package:python]
     cmds:
       - ./scripts/check-python.sh
 
@@ -145,6 +150,7 @@ tasks:
 
   check:all:
     desc: Run all generation checks
+    deps: [clean, install]
     cmds:
       - task: check:typescript
       - task: check:python
