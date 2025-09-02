@@ -1,26 +1,18 @@
 {
   "generated": "2025-09-01T00:00:00.000Z",
-  "note": "Manually extracted from src/main/proto/attestor/v1/attestor.proto",
+  "note": "Manually extracted from schemas/proto/cyberstorm/attestor/v1/messages.proto",
   "schemas": {
-    "IdentityRegistration": {
-      "definition": "string Domain,string Identifier,address Registrant,string ProofUrl,address Validator,bytes RegistrantSignature,bytes ValidatorSignature",
-      "description": "Domain identity verification"
+    "Identity": {
+      "definition": "string domain,string identifier,address registrant,string proof_url,address attestor,bytes registrant_signature,bytes attestor_signature",
+      "description": "Identity registry - links domain identifier to Ethereum address"
     },
-    "RepositoryRegistration": {
-      "definition": "string Domain,string Path,address Registrant,string ProofUrl,address Validator,bytes RegistrantSignature,bytes ValidatorSignature",
-      "description": "Repository registration for contribution monitoring"
+    "Repository": {
+      "definition": "string domain,string path,address registrant,string proof_url,address attestor,bytes registrant_signature,bytes attestor_signature",
+      "description": "Repository for EAS attestation (stored on-chain)"
     },
-    "IssueContribution": {
-      "definition": "string Domain,string Path,address Contributor,bytes32 IdentityAttestationUid,bytes32 RepositoryRegistrationUid,string Url,string EventType",
-      "description": "GitHub issue contribution attestation"
-    },
-    "PullRequestContribution": {
-      "definition": "string Domain,string Path,address Contributor,bytes32 IdentityAttestationUid,bytes32 RepositoryRegistrationUid,string Url,string EventType,string CommitHash",
-      "description": "GitHub pull request contribution attestation"
-    },
-    "ReviewContribution": {
-      "definition": "string Domain,string Path,address Contributor,bytes32 IdentityAttestationUid,bytes32 RepositoryRegistrationUid,string Url,string EventType,bytes32 ReviewedPrUid",
-      "description": "GitHub code review contribution attestation"
+    "Contribution": {
+      "definition": "bytes32 identity_uid,bytes32 repository_uid,string event_type,string url,bytes32[] linked_contribution_uids",
+      "description": "Contribution event attestation linking to identity and repository"
     }
   }
 }

@@ -57,15 +57,15 @@ Ready to build verifiable professional reputation? Here's how to integrate these
 
 ### For Repository Maintainers
 
-Use [https://github.com/cyberstorm-dev/attestor-client](cyberstorm-attestor-client) to:
+Use [cyberstorm-attestor-client](https://github.com/cyberstorm-dev/attestor-client) to:
 
-1. **Register your repository** using the `RepositoryRegistration` schema
+1. **Register your repository** using the `Repository` schema
 2. **Configure webhooks** to automatically attest contributor actions
 3. **Build value** for your community by making contributions verifiable
 
 ### For Developers
 
-Use [https://github.com/cyberstorm-dev/attestor-client](cyberstorm-attestor-client) to:
+Use [cyberstorm-attestor-client](https://github.com/cyberstorm-dev/attestor-client) to:
 
 1. **Register your identity** linking GitHub to your Ethereum address
 2. **Contribute to registered repositories** and earn verified attestations
@@ -140,7 +140,7 @@ identity = Identity(
 import "github.com/cyberstorm-dev/attestor-schemas/gen/cyberstorm/attestor/v1"
 
 // Register a repository for contribution tracking
-repoRegistration := &attestorv1.RepositoryRegistration{
+repoRegistration := &attestorv1.Repository{
     Repository: &attestorv1.Repository{
         Domain: &attestorv1.Domain{
             Name:   "GitHub",
