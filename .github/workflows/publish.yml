@@ -7,25 +7,19 @@ on:
         description: 'Version to release (e.g., 1.0.1)'
         required: true
         type: string
-      publish_to_npm:
-        description: 'Publish TypeScript package to npm'
-        required: false
-        type: boolean
-        default: false
       publish_to_pypi:
         description: 'Publish Python package to PyPI'
         required: false
         type: boolean
         default: false
-      publish_to_test_registries:
-        description: 'Publish to test registries first (npm beta, TestPyPI)'
+      publish_to_testpypi:
+        description: 'Publish to TestPyPI first'
         required: false
         type: boolean
         default: false
 
 env:
   PYTHON_VERSION: "3.11"
-  NODE_VERSION: "18"
 
 permissions:
   contents: write
@@ -165,14 +159,8 @@ jobs:
           
           ### Installation
           
-          **Python:**
           ```bash
           pip install cyberstorm-attestor-schemas==${{ github.event.inputs.version }}
-          ```
-          
-          **TypeScript/JavaScript:**
-          ```bash
-          npm install @cyberstorm-dev/attestor-schemas@${{ github.event.inputs.version }}
           ```
           
           ### Documentation
