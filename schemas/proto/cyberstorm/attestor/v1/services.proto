@@ -7,7 +7,7 @@ option go_package = "github.com/cyberstorm-dev/attestor-schemas/gen/cyberstorm/a
 
 import "google/api/annotations.proto";
 import "cyberstorm/attestor/v1/messages.proto";
-import "eas/v1/messages.proto";
+import "buf/validate/validate.proto";
 
 // Generic attestation service - schema-driven EAS operations
 service AttestService {
@@ -418,12 +418,91 @@ message ValidateRepositoryBranchResponse {
 
 // Missing request messages for lint compliance
 
+// Filter operators for request filtering
+enum FilterOperator {
+  FILTER_OPERATOR_UNSPECIFIED = 0;
+  FILTER_OPERATOR_EQUAL = 1;                    // For strings, bools, addresses
+  FILTER_OPERATOR_GREATER_THAN = 2;             // For uint64 (timestamps, values)
+  FILTER_OPERATOR_LESS_THAN = 3;                // For uint64 (timestamps, values)
+  FILTER_OPERATOR_GREATER_EQUAL = 4;            // For uint64 (timestamps, values)
+  FILTER_OPERATOR_LESS_EQUAL = 5;               // For uint64 (timestamps, values)
+  FILTER_OPERATOR_CONTAINS = 6;                 // For string fields (substring match)
+  FILTER_OPERATOR_IN = 7;                       // Value is in a list
+  FILTER_OPERATOR_EXISTS = 8;                   // Field has a value (not null/empty)
+}
+
+// Generic request filter for flexible querying
+message RequestFilter {
+  string field_name = 1 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 50,
+    pattern: "^[a-z_][a-z0-9_]*$"  // Only lowercase fields with underscores
+  }];
+  
+  FilterOperator operator = 2 [(buf.validate.field).enum = {
+    defined_only: true,
+    not_in: [0]  // FILTER_UNSPECIFIED not allowed
+  }];
+  
+  bool negate = 3;              // Apply NOT to the filter result
+  
+  // Value to filter against - use appropriate type based on operator
+  oneof value {
+    string string_value = 10 [(buf.validate.field).string = {
+      max_len: 256  // Reasonable limit for string filters
+    }];
+    uint64 uint64_value = 11;     // For GT/LT/GTE/LTE with timestamps/values  
+    bool bool_value = 12;         // For EQUAL with boolean fields
+  }
+  
+  // Separate field for IN operations (can't use repeated in oneof)
+  repeated string string_list = 13 [(buf.validate.field).repeated = {
+    max_items: 100,
+    items: {
+      string: {
+        min_len: 1,
+        max_len: 256
+      }
+    }
+  }];
+}
+
 // Empty request messages (previously using google.protobuf.Empty)
 message GetSchemasRequest {
   option (openapi_title) = "GetSchemasRequest";}
 message GetServerAddressRequest {}
-message ListRepositoriesRequest {}
-message ListIdentitiesRequest {}
+
+message ListRepositoriesRequest {
+  uint32 limit = 1 [(buf.validate.field).uint32 = {
+    lte: 1000,  // Reasonable limit to prevent abuse
+    gte: 1
+  }];
+  uint32 offset = 2;            // Optional: offset for pagination (default: 0)
+  repeated RequestFilter filters = 3 [(buf.validate.field).repeated = {
+    max_items: 10  // Limit complexity of queries
+  }];
+  string order_by = 4 [(buf.validate.field).string = {
+    max_len: 50,
+    pattern: "^[a-z_][a-z0-9_]*$"  // Valid field names only
+  }];
+  bool order_desc = 5;          // Optional: descending order (default: true)
+}
+
+message ListIdentitiesRequest {
+  uint32 limit = 1 [(buf.validate.field).uint32 = {
+    lte: 1000,  // Reasonable limit to prevent abuse
+    gte: 1
+  }];
+  uint32 offset = 2;            // Optional: offset for pagination (default: 0)
+  repeated RequestFilter filters = 3 [(buf.validate.field).repeated = {
+    max_items: 10  // Limit complexity of queries
+  }];
+  string order_by = 4 [(buf.validate.field).string = {
+    max_len: 50,
+    pattern: "^[a-z_][a-z0-9_]*$"  // Valid field names only
+  }];
+  bool order_desc = 5;          // Optional: descending order (default: true)
+}
 
 // Request messages that wrap existing types
 message RegisterRepositoryRequest {
@@ -446,20 +525,30 @@ message RegisterIdentityRequest {
 
 message LookupIdentityRequest {
   option (openapi_title) = "LookupIdentityRequest";
+  // Legacy fields for backward compatibility
   string domain = 1;                    // Optional: filter by domain (e.g., "github.com")
   string identifier = 2;               // Optional: lookup by identifier (e.g., username)
   string registrant = 3;               // Optional: lookup by registrant address
   bytes identity_uid = 4;              // Optional: lookup by attestation UID
-  // Note: Provide one of: (domain + identifier), registrant, or identity_uid
+  
+  // New flexible filtering system
+  repeated RequestFilter filters = 10;  // Additional filters to apply (ANDed together)
+  bool include_revoked = 11;           // Optional: include revoked identities (default: false)
+  bool include_expired = 12;           // Optional: include expired identities (default: false)
 }
 
 message LookupRepositoryRequest {
   option (openapi_title) = "LookupRepositoryRequest";
+  // Legacy fields for backward compatibility
   string domain = 1;                    // Optional: filter by domain (e.g., "github.com")
   string path = 2;                     // Optional: lookup by repository path (e.g., "owner/repo")
   string registrant = 3;               // Optional: lookup by registrant address
   bytes repository_uid = 4;            // Optional: lookup by attestation UID
-  // Note: Provide one of: (domain + path), registrant, or repository_uid
+  
+  // New flexible filtering system
+  repeated RequestFilter filters = 10;  // Additional filters to apply (ANDed together)
+  bool include_revoked = 11;           // Optional: include revoked repositories (default: false)
+  bool include_expired = 12;           // Optional: include expired repositories (default: false)
 }
 
 message LookupRepositoryResponse {
