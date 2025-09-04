@@ -5,6 +5,7 @@ package cyberstorm.attestor.v1;
 option go_package = "github.com/cyberstorm-dev/attestor-schemas/gen/cyberstorm/attestor/v1";
 
 import "google/protobuf/descriptor.proto";
+import "eas/v1/messages.proto";
 
 extend google.protobuf.MessageOptions {
   optional string openapi_title = 50001;
@@ -21,6 +22,7 @@ message Identity {
   string attestor = 5;            // Ethernet address of the attestor
   bytes registrant_signature = 6; // Registrant's signature of (domain.domain + identifier + registrant)
   bytes attestor_signature = 7;   // Attestor's signature of (domain.domain + identifier + registrant)
+  eas.v1.Attestation eas_attestation = 8; // Optional: EAS attestation metadata when loaded from chain
 }
 
 // Repository for EAS attestation (stored on-chain)
@@ -33,6 +35,7 @@ message Repository {
   string attestor = 5;            // Ethereum address of the attestor
   bytes registrant_signature = 6; // Signature of (repository.domain.domain + repository.path) by registrant
   bytes attestor_signature = 7;   // Attestor's signature of (repository.domain.domain + repository.path + registrant)
+  eas.v1.Attestation eas_attestation = 8; // Optional: EAS attestation metadata when loaded from chain
   // Note: webhook_secret derived as keccak256(domain + path + registrant_signature + attestor_address)
 }
 
@@ -63,6 +66,7 @@ message Contribution {
   bytes identity_uid = 6;     // UID of the Identity attestation for composability
   bytes repository_uid = 7; // UID of the Repository attestation
   repeated bytes linked_contribution_uids = 8;
+  eas.v1.Attestation eas_attestation = 9; // Optional: EAS attestation metadata when loaded from chain
 }
 
 // Webhook payload wrapper

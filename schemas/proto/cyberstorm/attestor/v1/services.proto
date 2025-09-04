@@ -7,6 +7,7 @@ option go_package = "github.com/cyberstorm-dev/attestor-schemas/gen/cyberstorm/a
 
 import "google/api/annotations.proto";
 import "cyberstorm/attestor/v1/messages.proto";
+import "eas/v1/messages.proto";
 
 // Generic attestation service - schema-driven EAS operations
 service AttestService {
@@ -98,6 +99,12 @@ service ContributionService {
       get: "/v1/repository/list"
     };
   }
+  rpc LookupRepository(LookupRepositoryRequest) returns (LookupRepositoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/repository/lookup"
+      body: "*"
+    };
+  }
 
   // Identity management
   rpc RegisterIdentity(RegisterIdentityRequest) returns (RegisterIdentityResponse) {
@@ -155,16 +162,6 @@ service ContributionService {
   rpc GetContributionsByUid(GetContributionsByUidRequest) returns (GetContributionsByUidResponse) {
     option (google.api.http) = {
       get: "/v1/contributions/by-uid/{attestation_uid}"
-    };
-  }
-  rpc GetLinkedIssues(GetLinkedIssuesRequest) returns (GetLinkedIssuesResponse) {
-    option (google.api.http) = {
-      get: "/v1/contributions/pr/{pr_attestation_uid}/issues"
-    };
-  }
-  rpc GetPullRequestReviews(GetPullRequestReviewsRequest) returns (GetPullRequestReviewsResponse) {
-    option (google.api.http) = {
-      get: "/v1/contributions/pr/{pr_attestation_uid}/reviews"
     };
   }
 
@@ -385,25 +382,6 @@ message GetContributionsByUidRequest {
   uint32 offset = 3;
 }
 
-message GetLinkedIssuesRequest {
-  option (openapi_title) = "GetLinkedIssuesRequest";
-  bytes pr_attestation_uid = 1;    // UID of the PR attestation
-}
-
-message GetLinkedIssuesResponse {
-  option (openapi_title) = "GetLinkedIssuesResponse";
-  repeated Contribution issues = 1;
-}
-
-message GetPullRequestReviewsRequest {
-  option (openapi_title) = "GetPullRequestReviewsRequest";
-  bytes pr_attestation_uid = 1;    // UID of the PR attestation
-}
-
-message GetPullRequestReviewsResponse {
-  option (openapi_title) = "GetPullRequestReviewsResponse";
-  repeated Contribution reviews = 1;
-}
 
 // Repository registration workflow messages
 message GenerateRepositoryBranchNameRequest {
@@ -468,9 +446,28 @@ message RegisterIdentityRequest {
 
 message LookupIdentityRequest {
   option (openapi_title) = "LookupIdentityRequest";
-  string domain = 1;
-  string identifier = 2;
+  string domain = 1;                    // Optional: filter by domain (e.g., "github.com")
+  string identifier = 2;               // Optional: lookup by identifier (e.g., username)
+  string registrant = 3;               // Optional: lookup by registrant address
+  bytes identity_uid = 4;              // Optional: lookup by attestation UID
+  // Note: Provide one of: (domain + identifier), registrant, or identity_uid
 }
+
+message LookupRepositoryRequest {
+  option (openapi_title) = "LookupRepositoryRequest";
+  string domain = 1;                    // Optional: filter by domain (e.g., "github.com")
+  string path = 2;                     // Optional: lookup by repository path (e.g., "owner/repo")
+  string registrant = 3;               // Optional: lookup by registrant address
+  bytes repository_uid = 4;            // Optional: lookup by attestation UID
+  // Note: Provide one of: (domain + path), registrant, or repository_uid
+}
+
+message LookupRepositoryResponse {
+  option (openapi_title) = "LookupRepositoryResponse";
+  Repository repository = 1;
+  bool found = 2;
+}
+
 
 message ProcessWebhookRequest {
   option (openapi_title) = "ProcessWebhookRequest";
@@ -480,7 +477,17 @@ message ProcessWebhookRequest {
 // Specific query request messages
 message GetContributionsByIdentityRequest {
   option (openapi_title) = "GetContributionsByIdentityRequest";
-  Identity identity = 1;
+  // Identity lookup options - provide one of the following:
+  Identity identity = 1;                // Full identity object (legacy)
+  string identity_domain = 5;           // Optional: identity domain (e.g., "github.com")
+  string identifier = 6;               // Optional: identity identifier (e.g., username)
+  string registrant = 7;               // Optional: identity registrant address
+  bytes identity_uid = 8;              // Optional: identity attestation UID
+  // Repository filtering options (optional):
+  string repository_domain = 9;        // Optional: filter by repository domain
+  string repository_path = 10;         // Optional: filter by repository path
+  bytes repository_uid = 11;           // Optional: filter by repository attestation UID
+  // Other filtering options:
   repeated ContributionEventType event_types = 2; // Filter by event types (optional)
   uint32 limit = 3;
   uint32 offset = 4;
@@ -488,7 +495,18 @@ message GetContributionsByIdentityRequest {
 
 message GetContributionsByRepositoryRequest {
   option (openapi_title) = "GetContributionsByRepositoryRequest";
-  Repository repository = 1;
+  // Repository lookup options - provide one of the following:
+  Repository repository = 1;            // Full repository object (legacy)
+  string repository_domain = 5;        // Optional: repository domain (e.g., "github.com")
+  string repository_path = 6;          // Optional: repository path (e.g., "owner/repo")
+  string repository_registrant = 7;    // Optional: repository registrant address
+  bytes repository_uid = 8;            // Optional: repository attestation UID
+  // Identity filtering options (optional):
+  string identity_domain = 9;          // Optional: filter by identity domain
+  string identity_identifier = 10;     // Optional: filter by identity identifier
+  string identity_registrant = 11;     // Optional: filter by identity registrant address
+  bytes identity_uid = 12;             // Optional: filter by identity attestation UID
+  // Other filtering options:
   repeated ContributionEventType event_types = 2; // Filter by event types (optional)
   uint32 limit = 3;
   uint32 offset = 4;
