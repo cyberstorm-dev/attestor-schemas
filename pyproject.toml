@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cyberstorm-attestor-schemas"
-version = "1.0.1"
+version = "1.0.2"
 description = "Protocol Buffer schemas and generated clients for Cyberstorm Attestor service"
 readme = "README.md"
 license = "MIT"
