@@ -67,7 +67,7 @@ tasks:
     deps: [install]
     cmds:
       - mkdir -p {{.DIST_DIR}}/python logs
-      - buf generate --template buf.gen.python.yaml {{.SCHEMAS_DIR}} >logs/buf-python.log 2>&1
+      - buf generate --template buf.gen.python.yaml --include-imports {{.SCHEMAS_DIR}} >logs/buf-python.log 2>&1
       - echo "Python files generated in {{.DIST_DIR}}/python/"
 
   generate:go:
