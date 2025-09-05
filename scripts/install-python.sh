@@ -27,6 +27,21 @@ if [ -d "dist/python/cyberstorm" ]; then
         ls -la ./venv/ >>logs/python-install.log 2>&1
         exit 1
     fi
+    
+    # Fix missing google/__init__.py file (common protobuf installation issue)
+    if [ -f "./venv/bin/python" ]; then
+        PYTHON_VERSION=$(./venv/bin/python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        GOOGLE_PKG_DIR="./venv/lib/python${PYTHON_VERSION}/site-packages/google"
+    elif [ -f "./venv/Scripts/python" ]; then
+        GOOGLE_PKG_DIR="./venv/Lib/site-packages/google"
+    fi
+    
+    # Create google/__init__.py if it doesn't exist (fixes namespace package imports)
+    if [ -n "$GOOGLE_PKG_DIR" ] && [ -d "$GOOGLE_PKG_DIR" ] && [ ! -f "$GOOGLE_PKG_DIR/__init__.py" ]; then
+        echo "Creating missing google/__init__.py file..."
+        touch "$GOOGLE_PKG_DIR/__init__.py" 2>/dev/null || true
+    fi
+    
     echo "Python package installed in development mode"
 else
     echo "Python source files not generated yet - skipping package installation"

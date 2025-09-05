@@ -1,6 +1,6 @@
 {
   "name": "@cyberstorm-dev/attestor-schemas",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Protocol Buffer schemas and generated clients for Cyberstorm Attestor service",
   "main": "src/index.js",
   "scripts": {

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cyberstorm-attestor-schemas"
-version = "1.0.1"
+version = "1.0.2"
 description = "Protocol Buffer schemas and generated clients for Cyberstorm Attestor service"
 readme = "README.md"
 license = "MIT"
@@ -27,6 +27,7 @@ dependencies = [
     "grpcio>=1.50.0",
     "grpcio-tools>=1.50.0",
     "googleapis-common-protos>=1.60.0",
+    "protovalidate>=0.15.0",
 ]
 
 [project.optional-dependencies]

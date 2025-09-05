@@ -30,6 +30,8 @@ else
 fi
 
 $PYTHON_CMD -c "
+import sys
+sys.path.append('dist/python')
 from cyberstorm.attestor.v1 import services_pb2, messages_pb2
 print('✅ Python imports successful')
 print(f'Services: {len(dir(services_pb2))} attributes')
