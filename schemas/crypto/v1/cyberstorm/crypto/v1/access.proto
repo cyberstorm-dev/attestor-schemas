@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package cyberstorm.crypto.v1;
+
+import "buf/validate/validate.proto";
+
+enum KeyType {
+  KEY_TYPE_UNSPECIFIED = 0;
+  KEY_TYPE_CONTENT = 1;  // CEK encrypted by group key
+  KEY_TYPE_GROUP = 2;    // KEK encrypted by user public key
+}
+
+message AccessGrant {
+  KeyType key_type = 1 [(buf.validate.field).enum.defined_only = true];
+  oneof target {
+    bytes content_cid = 2;  // For CONTENT_KEY
+    string group_id = 3;    // For GROUP_KEY
+  }
+  bytes encrypted_key_material = 4 [(buf.validate.field).bytes.min_len = 1];
+}
