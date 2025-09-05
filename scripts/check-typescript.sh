@@ -14,8 +14,13 @@ find dist/typescript -name "*.ts" -exec ls -la {} \;
 
 # Check that files are valid TypeScript (basic syntax check)
 echo "📝 Checking TypeScript syntax..."
-if command -v tsc >/dev/null 2>&1; then
+if npm list typescript >/dev/null 2>&1; then
+    # Use locally installed TypeScript
     npx tsc --noEmit --skipLibCheck dist/typescript/cyberstorm/attestor/v1/services_connect.ts || exit 1
+    echo "✅ services_connect.ts has valid syntax"
+elif command -v tsc >/dev/null 2>&1; then
+    # Use globally installed TypeScript
+    tsc --noEmit --skipLibCheck dist/typescript/cyberstorm/attestor/v1/services_connect.ts || exit 1
     echo "✅ services_connect.ts has valid syntax"
 else
     echo "⚠️  TypeScript compiler not available, skipping syntax check"
