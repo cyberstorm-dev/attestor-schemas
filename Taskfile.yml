@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  SCHEMAS_DIR: schemas/proto
+  SCHEMAS_DIR: schemas
   DIST_DIR: dist
 
 tasks:
@@ -33,19 +33,19 @@ tasks:
     desc: Update proto dependencies
     deps: [install]
     cmds:
-      - cd {{.SCHEMAS_DIR}} && buf dep update
+      - cd {{.SCHEMAS_DIR}}/attestor/v1 && buf dep update
 
   lint:
     desc: Lint proto files
     deps: [deps]
     cmds:
-      - cd {{.SCHEMAS_DIR}} && buf lint
+      - cd {{.SCHEMAS_DIR}}/attestor/v1 && buf lint
 
   format:
     desc: Format proto files
     deps: [install]
     cmds:
-      - cd {{.SCHEMAS_DIR}} && buf format -w
+      - cd {{.SCHEMAS_DIR}}/attestor/v1 && buf format -w
 
   install:typescript:
     desc: Install dependencies for JavaScript generation
@@ -59,7 +59,7 @@ tasks:
     deps: [install, install:typescript]
     cmds:
       - mkdir -p {{.DIST_DIR}}/typescript logs
-      - buf generate --template buf.gen.typescript.yaml {{.SCHEMAS_DIR}} >logs/buf-typescript.log 2>&1
+      - buf generate --template buf.gen.yaml {{.SCHEMAS_DIR}}/attestor/v1 >logs/buf-typescript-attestor.log 2>&1
       - echo "JavaScript files generated in {{.DIST_DIR}}/typescript/"
 
   generate:python:
@@ -67,7 +67,7 @@ tasks:
     deps: [install]
     cmds:
       - mkdir -p {{.DIST_DIR}}/python logs
-      - buf generate --template buf.gen.python.yaml --include-imports {{.SCHEMAS_DIR}} >logs/buf-python.log 2>&1
+      - buf generate --template buf.gen.yaml {{.SCHEMAS_DIR}}/attestor/v1 >logs/buf-python-attestor.log 2>&1
       - echo "Python files generated in {{.DIST_DIR}}/python/"
 
   generate:go:
@@ -75,12 +75,12 @@ tasks:
     deps: [install]  
     cmds:
       - mkdir -p {{.DIST_DIR}}/go logs
-      - buf generate --template buf.gen.go.yaml {{.SCHEMAS_DIR}} >logs/buf-go.log 2>&1
+      - buf generate --template buf.gen.yaml {{.SCHEMAS_DIR}}/attestor/v1 >logs/buf-go-attestor.log 2>&1
       - cp templates/go.mod.template {{.DIST_DIR}}/go/go.mod
       - |
         if [ ! -f "{{.DIST_DIR}}/go/go.mod" ]; then
           cd {{.DIST_DIR}}/go
-          go mod init github.com/cyberstorm-dev/attestor-schemas
+          go mod init github.com/cyberstorm-dev/schemas
           go mod tidy
         fi
       - echo "Go files generated in {{.DIST_DIR}}/go/"
@@ -90,7 +90,7 @@ tasks:
     deps: [install]
     cmds:
       - mkdir -p {{.DIST_DIR}}/openapi {{.DIST_DIR}}/docs logs
-      - buf generate --template buf.gen.openapi.yaml {{.SCHEMAS_DIR}} >logs/buf-openapi.log 2>&1
+      - buf generate --template buf.gen.yaml {{.SCHEMAS_DIR}}/attestor/v1 >logs/buf-openapi-attestor.log 2>&1
       - ./scripts/convert-swagger-to-openapi.sh
       - echo "Swagger 2.0 and OpenAPI 3.0 files generated in {{.DIST_DIR}}/openapi/"
 
@@ -114,7 +114,7 @@ tasks:
     desc: Check for breaking changes against main branch  
     deps: [install]
     cmds:
-      - buf breaking {{.SCHEMAS_DIR}} --against '.git#branch=main'
+      - buf breaking {{.SCHEMAS_DIR}}/attestor/v1 --against '.git#branch=main,subdir={{.SCHEMAS_DIR}}/attestor/v1'
 
   check:typescript:
     desc: Validate packaged JavaScript files exist and are syntactically valid
