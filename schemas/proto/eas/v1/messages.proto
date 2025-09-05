@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package eas.v1;
 
-option go_package = "github.com/eas-sdk/proto/eas/v1;easv1";
+option go_package = "github.com/cyberstorm-dev/attestor-schemas/go/eas/v1;easv1";
 option java_package = "com.eas.sdk.proto.eas.v1";
 option java_multiple_files = true;
 

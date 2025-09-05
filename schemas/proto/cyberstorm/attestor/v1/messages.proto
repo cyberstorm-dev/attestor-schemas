@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package cyberstorm.attestor.v1;
 
-option go_package = "github.com/cyberstorm-dev/attestor-schemas/gen/cyberstorm/attestor/v1";
+option go_package = "github.com/cyberstorm-dev/attestor-schemas/go/cyberstorm/attestor/v1";
 
 import "google/protobuf/descriptor.proto";
 import "eas/v1/messages.proto";
