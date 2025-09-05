@@ -10,7 +10,7 @@ def validate_openapi_files():
     """Validate all OpenAPI 3.0 JSON files."""
     print("📋 Validating OpenAPI 3.0 files...")
     
-    pattern = "dist/openapi/cyberstorm/attestor/v1/*.openapi.json"
+    pattern = "dist/openapi/*.openapi.json"
     openapi_files = glob.glob(pattern)
     
     if not openapi_files:

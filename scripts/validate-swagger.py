@@ -10,7 +10,7 @@ def validate_swagger_files():
     """Validate all Swagger 2.0 JSON files."""
     print("📋 Validating Swagger 2.0 files...")
     
-    pattern = "dist/openapi/cyberstorm/attestor/v1/*.swagger.json"
+    pattern = "dist/openapi/*.swagger.json"
     swagger_files = glob.glob(pattern)
     
     if not swagger_files:
